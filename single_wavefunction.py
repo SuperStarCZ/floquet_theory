@@ -91,32 +91,36 @@ if __name__ == '__main__':
         psi0 = periodic_psi[mm]       
         psi_t = odeintw(floq_func,psi0,t,args=(h,h0,w,cosp), Dfun=floq_jac)
         floqEvoluion_mat[mm] = psi_t[N-1]
-    evals, evecs = eig(floqEvoluion_mat)
-    phasefunc = (1j * np.log(evals))/T
+    
     floqpath = floqEvoluion_mat[nn]
-    phasefunc_path.append(phasefunc[nn])
+    evals, evecs = eig(floqEvoluion_mat)
+    phasefunc = (1j * np.log(evals[nn]))/T
+    print('phasefunct',phasefunc)
+    phasefunc_path.append(phasefunc)
     
     # calculate for rest of the frequencies
     for w in omegas[1:len(omegas)]:
-        T = 2 * np.pi/w
-        #print('omega',w)                        # time periode
-        t = np.linspace(0,2 * np.pi/w,N)       # time range
+        T = 2 * np.pi/w                      # time periode
+        t = np.linspace(0,2 * np.pi/w,N) 
+        print('omega',w)# time range
         floqEvoluion_mat = np.zeros((N,N)) + (1j) * np.zeros((N,N))        
         for mm in np.arange(N):
             psi0 = periodic_psi[mm]       
             psi_t = odeintw(floq_func,psi0,t,args=(h,h0,w,cosp), Dfun=floq_jac)
             floqEvoluion_mat[mm] = psi_t[N-1]            
-            for xx in np.arange(N):
-                if (np.dot(np.conjugate(floqpath).T,floqEvoluion_mat[xx]) == 1.0):
-                    #print('dot product',np.abs(1.0-np.dot(np.conjugate(floqpath).T,floqEvoluion_mat[xx])))
-                    floqpath = floqEvoluion_mat[xx]
-                    pp = xx
-                    break
+        for xx in np.arange(N):
+            if (np.dot(np.conjugate(floqpath).T,floqEvoluion_mat[xx]) == 1.0):
+                #print('dot product',np.abs(1.0-np.dot(np.conjugate(floqpath).T,floqEvoluion_mat[xx])))
+                floqpath = floqEvoluion_mat[xx]
+                pp = xx
+                print('pp',pp)
+            break
             evals, evecs = eig(floqEvoluion_mat)
-            phasefunc = (1j * np.log(evals))/T
-            phasefunc_path.append(phasefunc[pp])
+            phasefunc = (1j * np.log(evals[pp]))/T
+            print('phasefunct',phasefunc)
+            phasefunc_path.append(phasefunc)
     
     print("time taken",time.time()-start,"sec")
     #plt.figure(figsize=(14,7))
-    plt.plot(omegas,phasefunc)
+    plt.plot(omegas,phasefunc_path.real)
     plt.show()
