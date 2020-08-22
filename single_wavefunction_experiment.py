@@ -16,10 +16,10 @@ import time
 start = time.time()
 
 cosp_init = 0.0    
-N = 4 
+N = 10 
 h = 25.0
 h0 = 0.1
-nn = 0   #this is the column of the floquet evolution matrix for which the path we shall follow
+nn = 2   #this is the th column of the floquet evolution matrix for which the path we shall follow
 
 q = np.linspace(-0.5, 0.5, N)
 omega_range = np.linspace(6.25,7.0,10)
@@ -31,6 +31,7 @@ cosp = np.zeros((N,N)) + (1j) * np.zeros((N,N))
 cosp_init = np.zeros((N,N)) + (1j) * np.zeros((N,N))
 floqEvolution_mat = np.zeros((N,N)) + (1j) * np.zeros((N,N))
 phasefunc_path = np.zeros(len(omegas))
+
 title = "mf floquet dynamics: n " + str(N)
 photoname = "n_" + str(N) + "_mfd_bessel.jpeg"
 filename = "n_" + str(N) + "_mfd.txt"
@@ -106,7 +107,8 @@ if __name__ == '__main__':
     
     # calculate for rest of the frequencies
     for j, w in enumerate(omegas[1:len(omegas)]):
-        print('j,w=',j,w)
+        print('evecs_path',evecs_path)
+        print('j,w=',j+1,w)
         T = 2 * np.pi/w                      # time periode
         t = np.linspace(0,2 * np.pi/w,N)     # time range
         floqEvolution_mat = np.zeros((N,N)) + (1j) * np.zeros((N,N))        
@@ -116,13 +118,13 @@ if __name__ == '__main__':
             floqEvolution_mat[mm] = psi_t[N-1] 
         evals, evecs = eig(floqEvolution_mat)
         for xx in np.arange(N):
-            print('dot product',np.dot(np.conjugate(evecs_path).T,evecs[xx]))
-            if (np.dot(np.conjugate(evecs_path).T,evecs[xx]) != 1.0):
+            #print('dot product',np.dot(np.conjugate(evecs_path).T,evecs[xx]).real)
+            if (np.dot(np.conjugate(evecs_path).T,evecs[xx]).real != 0.0):
                 evecs_path = evecs[xx]
                 pp = xx
                 print('pp',pp)
-        break
+                break
         
         phasefunc = (1j * np.log(evals[pp]))/T
-        print('phasefunct',phasefunc)
-        phasefunc_path[j] = phasefunc
+        #print('phasefunct',phasefunc)
+        phasefunc_path[j+1] = phasefunc
