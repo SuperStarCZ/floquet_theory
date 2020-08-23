@@ -17,7 +17,7 @@ from array import *
 start = time.time()
 
 cosp_init = 0.0    
-N = 10
+N = 4
 h = 25.0
 h0 = 0.1
 nn =0   #this is the th column of the floquet evolution matrix for which the path we shall follow
@@ -126,7 +126,7 @@ if __name__ == '__main__':
         #print('flomat1',floqEvolution_mat)
         for xx in np.arange(N):
             print('dot product',np.dot(np.conjugate(evecs_path),\
-                                       evecs[xx]/(np.linalg.norm(evecs[xx]))).real)
+                                       evecs[xx]/(np.linalg.norm(evecs[xx]))))
             if (np.abs(1-np.dot(np.conjugate(evecs_path),\
                                 evecs[xx]/(np.linalg.norm(evecs[xx]))).real) <= 0.00001):
                 evecs_path = evecs[xx]/(np.linalg.norm(evecs[xx]))
