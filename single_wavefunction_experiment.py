@@ -17,13 +17,13 @@ from array import *
 start = time.time()
 
 cosp_init = 0.0    
-N = 4
+N = 3
 h = 25.0
 h0 = 0.1
-nn =0   #this is the th column of the floquet evolution matrix for which the path we shall follow
+nn = 1   #this is the th column of the floquet evolution matrix for which the path we shall follow
 
 q = np.linspace(-0.5, 0.5, N)
-omega_range = np.linspace(6.25,6.255,50)
+omega_range = np.linspace(6.65,6.7,100)
 omegas = omega_range
 
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     
     # calculate for first frequency
     w = omegas[0]
-    print('w',w)
+    #print('w',w)
     T = 2 * np.pi/w                            
     t = np.linspace(0,2 * np.pi/w,N)           
     floqEvolution_mat = np.zeros((N,N)) + (1j) * np.zeros((N,N))
@@ -108,32 +108,34 @@ if __name__ == '__main__':
     phasefunc = (1j * np.log(evals[nn]))/T
     evecs_path = evecs[nn]/(np.linalg.norm(evecs[nn]))     # here the eigevector is normalised
     print('evecs_path1',evecs_path)
-    #print('dot 1 =',np.dot(evecs_path,evecs_path))
+    print('dot 1 =',np.dot(np.conjugate(evecs_path),evecs_path))
     phasefunc_path[0] = phasefunc
     
     # calculate for rest of the frequencies
-    for j, w in enumerate(omegas[1:len(omegas)]):
-        #print('evecs_path',evecs_path)
+    for cc, w in enumerate(omegas[1:len(omegas)]):
+        pp = nn
+        print('evecs_path',evecs_path)
         #print('j,w=',j+1,w)
-        T = 2 * np.pi/w                      # time periode
-        t = np.linspace(0,2 * np.pi/w,N)     # time range
+        T = 2 * np.pi/w                      
+        t = np.linspace(0,2 * np.pi/w,N)    
         floqEvolution_mat = np.zeros((N,N)) + (1j) * np.zeros((N,N))        
         for mm in np.arange(N):
             psi0 = periodic_psi[mm]       
             psi_t = odeintw(floq_func,psi0,t,args=(h,h0,w,cosp), Dfun=floq_jac)
             floqEvolution_mat[mm] = psi_t[N-1] 
         evals, evecs = eig(floqEvolution_mat)
-        #print('flomat1',floqEvolution_mat)
         for xx in np.arange(N):
-            print('dot product',np.dot(np.conjugate(evecs_path),\
-                                       evecs[xx]/(np.linalg.norm(evecs[xx]))))
-            if (np.abs(1-np.dot(np.conjugate(evecs_path),\
-                                evecs[xx]/(np.linalg.norm(evecs[xx]))).real) <= 0.00001):
-                evecs_path = evecs[xx]/(np.linalg.norm(evecs[xx]))
+            evec = evecs[xx]/(np.linalg.norm(evecs[xx]))
+            print('dot product',np.dot(np.conjugate(evecs_path), evec))
+            if (np.dot(np.conjugate(evecs_path), evec).real >= 0.9):
+                evecs_path = evec
                 pp = xx
                 print('pp',pp)
                 break
         
-        #hasefunc = (1j * np.log(evals[pp]))/T
-        #print('phasefunct',phasefunc)
-        #phasefunc_path[j+1] = phasefunc
+        phasefunc = (1j * np.log(evals[pp]))/T
+        phasefunc_path[cc+1] = phasefunc
+    
+    plt.plot(omegas,phasefunc_path.real)
+    plt.show()
+    print('time taken',time.time()-start)
