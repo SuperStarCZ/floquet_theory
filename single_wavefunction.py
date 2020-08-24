@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Aug 22 05:55:46 2020
-
-@author: mahi
-"""
-
 import numpy as np
 from odeintw import odeintw
 import matplotlib.pyplot as plt
@@ -20,10 +12,10 @@ cosp_init = 0.0
 N = 3
 h = 25.0
 h0 = 0.1
-nn = 1   #this is the th column of the floquet evolution matrix for which the path we shall follow
+nn = 0   #this is the th column of the floquet evolution matrix for which the path we shall follow
 
 q = np.linspace(-0.5, 0.5, N)
-omega_range = np.linspace(6.65,6.7,100)
+omega_range = np.linspace(5.0,10.0,5000)
 omegas = omega_range
 
 
@@ -32,7 +24,7 @@ cosp = np.zeros((N,N)) + (1j) * np.zeros((N,N))
 cosp_init = np.zeros((N,N)) + (1j) * np.zeros((N,N))
 floqEvolution_mat = np.zeros((N,N)) + (1j) * np.zeros((N,N))
 phasefunc_path = np.zeros(len(omegas))
-
+prob = np.zeros(N)
 title = "mf floquet dynamics: n " + str(N)
 photoname = "n_" + str(N) + "_mfd_bessel.jpeg"
 filename = "n_" + str(N) + "_mfd.txt"
@@ -106,33 +98,33 @@ if __name__ == '__main__':
     #print('flomat',floqEvolution_mat)
     evals, evecs = eig(floqEvolution_mat)
     phasefunc = (1j * np.log(evals[nn]))/T
-    evecs_path = evecs[nn]/(np.linalg.norm(evecs[nn]))     # here the eigevector is normalised
+    evecs_path = evecs[nn]/(np.linalg.norm(evecs[nn]))     # normalisation done
     print('evecs_path1',evecs_path)
     print('dot 1 =',np.dot(np.conjugate(evecs_path),evecs_path))
     phasefunc_path[0] = phasefunc
     
     # calculate for rest of the frequencies
-    for cc, w in enumerate(omegas[1:len(omegas)]):
-        pp = nn
-        print('evecs_path',evecs_path)
+    for cc, w in enumerate(omegas[1:len(omegas)]):    
         #print('j,w=',j+1,w)
         T = 2 * np.pi/w                      
         t = np.linspace(0,2 * np.pi/w,N)    
         floqEvolution_mat = np.zeros((N,N)) + (1j) * np.zeros((N,N))        
+        
         for mm in np.arange(N):
             psi0 = periodic_psi[mm]       
             psi_t = odeintw(floq_func,psi0,t,args=(h,h0,w,cosp), Dfun=floq_jac)
             floqEvolution_mat[mm] = psi_t[N-1] 
         evals, evecs = eig(floqEvolution_mat)
+        
         for xx in np.arange(N):
             evec = evecs[xx]/(np.linalg.norm(evecs[xx]))
-            print('dot product',np.dot(np.conjugate(evecs_path), evec))
-            if (np.dot(np.conjugate(evecs_path), evec).real >= 0.9):
-                evecs_path = evec
-                pp = xx
-                print('pp',pp)
-                break
+            prob[xx] = np.dot(np.conjugate(evecs_path), evec)
         
+        for i,pr in enumerate(prob):
+            if (pr == max(prob)):
+                pp = i
+        
+        evecs_path = evecs[pp]
         phasefunc = (1j * np.log(evals[pp]))/T
         phasefunc_path[cc+1] = phasefunc
     
