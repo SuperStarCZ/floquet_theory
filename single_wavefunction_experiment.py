@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Aug 24 06:20:21 2020
+
+@author: mahi
+"""
+
 import numpy as np
 from odeintw import odeintw
 import matplotlib.pyplot as plt
@@ -9,13 +17,13 @@ from array import *
 start = time.time()
 
 cosp_init = 0.0    
-N = 3
+N = 10
 h = 25.0
 h0 = 0.1
 nn = 0   #this is the th column of the floquet evolution matrix for which the path we shall follow
 
 q = np.linspace(-0.5, 0.5, N)
-omega_range = np.linspace(5.0,10.0,5000)
+omega_range = np.linspace(6.65,6.8,2)
 omegas = omega_range
 
 
@@ -116,12 +124,12 @@ if __name__ == '__main__':
             floqEvolution_mat[mm] = psi_t[N-1] 
         evals, evecs = eig(floqEvolution_mat)
         
-        for xx in np.arange(N):
-            evec = evecs[xx]/(np.linalg.norm(evecs[xx]))
-            prob[xx] = np.dot(np.conjugate(evecs_path), evec)
-        
+        prob = np.asarray(list(map(lambda x:np.dot(np.conjugate(evecs_path),\
+                                                   x/(np.linalg.norm(x))), evecs))) 
+        print('prob',prob)
         for i,pr in enumerate(prob):
             if (pr == max(prob)):
+                print('max prob',pr,i)
                 pp = i
         
         evecs_path = evecs[pp]
